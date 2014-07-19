@@ -50,6 +50,9 @@ import com.google.inject.internal.InternalInjectorCreator;
  */
 public final class Guice {
 
+  private static HierarchyTraversalFilterFactory hierarchyTraversalFilterFactory = new HierarchyTraversalFilterFactory();
+  private static AnnotationDatabaseFinder annotationDatabaseFinder;
+
   private Guice() {}
 
   /**
@@ -92,9 +95,56 @@ public final class Guice {
    */
   public static Injector createInjector(Stage stage,
       Iterable<? extends Module> modules) {
+    doSetAnnotationDatabaseFinderToModules(modules);
     return new InternalInjectorCreator()
         .stage(stage)
         .addModules(modules)
         .build();
+  }
+
+  /**
+   * Creates a {@link HierarchyTraversalFilter} using the {@link #hierarchyTraversalFilterFactory}.
+   * @return a new filter that can be used to selectively prune classes traversed by Guice to find injection points.
+   */
+  public static HierarchyTraversalFilter createHierarchyTraversalFilter() {
+    HierarchyTraversalFilter hierarchyTraversalFilter = hierarchyTraversalFilterFactory.createHierarchyTraversalFilter();
+    if( annotationDatabaseFinder == null ) {
+      return hierarchyTraversalFilter;
+    } else {
+      return new AnnotatedHierarchyTraversalFilter(annotationDatabaseFinder, hierarchyTraversalFilter);
+    }
+  }
+
+  /**
+   * Sets a factory to create {@link HierarchyTraversalFilter} instances.
+   * @param hierarchyTraversalFilterFactory the new factory used by Guice to prune hierarchy trees when finding injection points.
+   */
+  public static void setHierarchyTraversalFilterFactory(HierarchyTraversalFilterFactory hierarchyTraversalFilterFactory) {
+    Guice.hierarchyTraversalFilterFactory  = hierarchyTraversalFilterFactory;
+  }
+
+  /**
+   * Sets the names of packages to take into account to find annotation databases. 
+   * @param packageNames the names of packages to take into account to find annotation databases.
+ * @throws AnnotationDatabaseNotFoundException 
+   */
+  public static void setAnnotationDatabasePackageNames(final String[] packageNames) throws AnnotationDatabaseNotFoundException {
+    if( packageNames != null && packageNames.length != 0 ) {
+      annotationDatabaseFinder = new AnnotationDatabaseFinder(packageNames);
+    } else {
+      annotationDatabaseFinder = null;
+    }
+  }
+
+  public static AnnotationDatabaseFinder getAnnotationDatabaseFinder() {
+    return annotationDatabaseFinder;
+  }
+
+  private static void doSetAnnotationDatabaseFinderToModules(Iterable<? extends Module> modules) {
+    for( Module module : modules ) {
+      if( module instanceof AbstractModule ) {
+        ((AbstractModule)module).setAnnotationDatabaseFinder(annotationDatabaseFinder);
+      }
+    }
   }
 }
