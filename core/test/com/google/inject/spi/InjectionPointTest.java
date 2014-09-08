@@ -239,15 +239,15 @@ public class InjectionPointTest extends TestCase {
   }
   
   public void testOverrideBehavior() {
-	  Set<InjectionPoint> points;
-	  
-	  points = InjectionPoint.forInstanceMethodsAndFields(Super.class);
-	  assertEquals(points.toString(), 6, points.size());
-	  assertPoints(points, Super.class, "atInject", "gInject", "privateAtAndPublicG",
-	      "privateGAndPublicAt", "atFirstThenG", "gFirstThenAt");
-	  
-	  points = InjectionPoint.forInstanceMethodsAndFields(Sub.class);
-    assertEquals(points.toString(), 7, points.size());
+    Set<InjectionPoint> points;
+
+    points = InjectionPoint.forInstanceMethodsAndFields(Super.class);
+    assertEquals(points.toString(), 8, points.size());
+    assertPoints(points, Super.class, "atField", "gField", "atInject", "gInject", "privateAtAndPublicG",
+        "privateGAndPublicAt", "atFirstThenG", "gFirstThenAt");
+
+    points = InjectionPoint.forInstanceMethodsAndFields(Sub.class);
+    assertEquals(points.toString(), 9, points.size());
     // Superclass will always have is private members injected,
     // and 'gInject' was last @Injected in Super, so that remains the owner
     assertPoints(points, Super.class, "privateAtAndPublicG", "gInject", "atField", "gField", "privateGAndPublicAt");
@@ -278,13 +278,18 @@ public class InjectionPointTest extends TestCase {
   }
   
   static class Super {
-	  @javax.inject.Inject public void atInject() {}
-	  @com.google.inject.Inject public void gInject() {}
-	  
-	  @javax.inject.Inject private void privateAtAndPublicG() {}
-	  @com.google.inject.Inject private void privateGAndPublicAt() {}
-	  
-	  @javax.inject.Inject public void atFirstThenG() {}
+
+    @javax.inject.Inject String atField;
+    @com.google.inject.Inject String gField;
+
+    @javax.inject.Inject public void atInject() {}
+    @com.google.inject.Inject public void gInject() {}
+
+    @javax.inject.Inject private void privateAtAndPublicG() {}
+    @com.google.inject.Inject private void privateGAndPublicAt() {}
+
+    @javax.inject.Inject public void atFirstThenG() {}
+    @com.google.inject.Inject public void gFirstThenAt() {}
   }
   
   static class Sub extends Super {
