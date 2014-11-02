@@ -46,6 +46,20 @@ final class SingleFieldInjector implements SingleMemberInjector {
     return injectionPoint;
   }
 
+  public Object getValueToInject(Errors errors, InternalContext context, Object o) {
+	  errors = errors.withSource(dependency);
+
+    Dependency previous = context.pushDependency(dependency, binding.getSource());
+    try {
+      return binding.getInternalFactory().get(errors, context, dependency, false);
+    } catch (ErrorsException e) {
+      errors.withSource(injectionPoint).merge(e.getErrors());
+    } finally {
+      context.popStateAndSetDependency(previous);
+    }
+    return null;
+  }
+  
   public void inject(Errors errors, InternalContext context, Object o) {
     errors = errors.withSource(dependency);
 

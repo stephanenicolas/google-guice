@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.inject.weaver.WeavedInjector;
+
 public abstract class AnnotationDatabase {
     //TODO add the additional packages here and load database impl classes.
     protected AnnotationDatabase() {}
@@ -15,5 +17,9 @@ public abstract class AnnotationDatabase {
     public abstract void fillAnnotationClassesAndConstructors(HashMap<String, Map<String, Set<String>>> mapAnnotationToMapClassWithInjectionNameToConstructorSet);
     public abstract void fillClassesContainingInjectionPointSet(HashSet<String> classesContainingInjectionPointsSet);
     public abstract void fillBindableClasses(HashSet<String> injectedClasses);
+	public void fillMapClassToWeavedInjector(Map<Class, WeavedInjector> mapClassToWeavedInjector) {
+	// TODO Auto-generated method stub
+		
+	}
 
 }

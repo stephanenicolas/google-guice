@@ -23,5 +23,6 @@ import com.google.inject.spi.InjectionPoint;
  */
 interface SingleMemberInjector {
   void inject(Errors errors, InternalContext context, Object o);
+  Object getValueToInject(Errors errors, InternalContext context, Object o);
   InjectionPoint getInjectionPoint();
 }

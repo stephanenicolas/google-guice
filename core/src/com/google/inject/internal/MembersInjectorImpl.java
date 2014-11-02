@@ -126,10 +126,13 @@ final class MembersInjectorImpl<T> implements MembersInjector<T> {
 
   void injectMembers(T t, Errors errors, InternalContext context, boolean toolableOnly) {
     // optimization: use manual for/each to save allocating an iterator here
+	Object[] params = new Object[memberInjectors.size()];
     for (int i = 0, size = memberInjectors.size(); i < size; i++) {
       SingleMemberInjector injector = memberInjectors.get(i);
       if(!toolableOnly || injector.getInjectionPoint().isToolable()) {
-        injector.inject(errors, context, t);
+    	  //TODO XXX This is where we add the weaver ( and before to avoid building injection points with fields)
+        //injector.inject(errors, context, t);
+    	  params[i] = injector.getValueToInject(errors, context, t);
       }
     }
 

@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.inject.weaver.WeavedInjector;
+
 /**
  * Finds all annotation databases. AnnotationDatabase can be generated using RoboGuice annotation compiler.
  * By default the roboguice annotation database is taken into account, and this can't be modified.
@@ -25,6 +27,7 @@ public class AnnotationDatabaseFinder {
     private HashMap<String, Map<String, Set<String>>> mapAnnotationToMapClassContainingInjectionToInjectedMethodSet = new HashMap<String, Map<String, Set<String>>>();
     private HashMap<String, Map<String, Set<String>>> mapAnnotationToMapClassContainingInjectionToInjectedConstructorSet = new HashMap<String, Map<String, Set<String>>>();
     private HashSet<String> bindableClassesSet = new HashSet<String>();
+    private Map<Class, WeavedInjector> mapClassToWeavedInjector = new HashMap<Class, WeavedInjector>();
 
     public AnnotationDatabaseFinder(String[] additionalPackageNames) {
         try {
@@ -81,6 +84,7 @@ public class AnnotationDatabaseFinder {
         annotationDatabase.fillAnnotationClassesAndConstructors(mapAnnotationToMapClassContainingInjectionToInjectedConstructorSet);
         annotationDatabase.fillClassesContainingInjectionPointSet(classesContainingInjectionPointsSet);
         annotationDatabase.fillBindableClasses(bindableClassesSet);
+        annotationDatabase.fillMapClassToWeavedInjector(mapClassToWeavedInjector);
         //System.out.println(mapAnnotationToMapClassWithInjectionNameToMethodSet.toString());
     }
 

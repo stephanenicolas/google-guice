@@ -78,6 +78,10 @@ final class SingleMethodInjector implements SingleMemberInjector {
     return injectionPoint;
   }
 
+  public Object getValueToInject(Errors errors, InternalContext context, Object o) {
+	  return null;
+  }
+  
   public void inject(Errors errors, InternalContext context, Object o) {
     Object[] parameters;
     try {
