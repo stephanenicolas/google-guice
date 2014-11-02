@@ -70,6 +70,10 @@ public class AnnotationDatabaseFinder {
     public Set<String> getBindableClassesSet() {
         return bindableClassesSet;
     }
+    
+    public Map<Class, WeavedInjector> getMapClassToWeavedInjector() {
+		return mapClassToWeavedInjector;
+	}
 
     private AnnotationDatabase getAnnotationDatabaseInstance(String annotationDatabaseClassName) throws ClassNotFoundException, InstantiationException,
     IllegalAccessException {

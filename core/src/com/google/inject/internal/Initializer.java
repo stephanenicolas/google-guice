@@ -176,7 +176,7 @@ final class Initializer {
             key,
             provisionCallback,
             source,
-            injector.options.stage == Stage.TOOL);
+            injector.options.stage == Stage.TOOL, null);
       }
 
       return instance;

@@ -16,6 +16,8 @@
 
 package com.google.inject.internal;
 
+import java.util.Map;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Guice;
@@ -61,8 +63,9 @@ final class MembersInjectorImpl<T> implements MembersInjector<T> {
   public void injectMembers(T instance) {
     Errors errors = new Errors(typeLiteral);
     try {
-      WeavedInjector weavedInjector = Guice.getAnnotationDatabaseFinder().
-      injectAndNotify(instance, errors, null, null, typeLiteral, false);
+      Map<Class, WeavedInjector> mapClassToWeavedInjector = Guice.getAnnotationDatabaseFinder().getMapClassToWeavedInjector();
+      WeavedInjector weavedInjector = mapClassToWeavedInjector.get(instance.getClass());
+      injectAndNotify(instance, errors, null, null, typeLiteral, false, weavedInjector);
     } catch (ErrorsException e) {
       errors.merge(e.getErrors());
     }
