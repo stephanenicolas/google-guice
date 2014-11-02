@@ -23,7 +23,10 @@ public class AnnotationDatabaseGenerator {
 
     public void generateAnnotationDatabase(JavaFileObject jfo, final String packageName, final HashMap<String, Map<String, Set<String>>> mapAnnotationToMapClassWithInjectionNameToFieldSet,
             HashMap<String, Map<String, Set<String>>> mapAnnotationToMapClassWithInjectionNameToMethodSet,
-            HashMap<String, Map<String, Set<String>>> mapAnnotationToMapClassWithInjectionNameToConstructorSet, final HashSet<String> classesContainingInjectionPointsSet, HashSet<String> bindableClasses) throws IOException {
+            HashMap<String, Map<String, Set<String>>> mapAnnotationToMapClassWithInjectionNameToConstructorSet, 
+            final HashSet<String> classesContainingInjectionPointsSet,
+            HashSet<String> bindableClasses,
+            HashMap<Class, Object> mapClassToWeavedInjector) throws IOException {
 
         Properties props = new Properties();
         props.put("resource.loader", "class");
@@ -38,6 +41,7 @@ public class AnnotationDatabaseGenerator {
         context.put("mapAnnotationToMapClassWithInjectionNameToConstructorSet", mapAnnotationToMapClassWithInjectionNameToConstructorSet);
         context.put("classesContainingInjectionPointsSet", classesContainingInjectionPointsSet);
         context.put("injectedClasses", bindableClasses);
+        context.put("mapClassToWeavedInjector", mapClassToWeavedInjector);
 
         Template template = null;
 
@@ -56,6 +60,24 @@ public class AnnotationDatabaseGenerator {
                 } catch( Exception ex ) {
                     ex.printStackTrace();
                     throw new IOException("Impossible to close annotation database.", ex);
+                }
+            }
+        }
+        
+        try {
+            template = Velocity.getTemplate("templates/WeavedInjectorImpl.vm");
+            w = new PrintWriter(jfo.openWriter());
+            template.merge(context, w);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new IOException("Impossible to generate WeavedInjector.", ex);
+        } finally {
+            if( w != null ) {
+                try {
+                    w.close();
+                } catch( Exception ex ) {
+                    ex.printStackTrace();
+                    throw new IOException("Impossible to close WeavedInjector.", ex);
                 }
             }
         }

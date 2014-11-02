@@ -18,12 +18,14 @@ package com.google.inject.internal;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.inject.Guice;
 import com.google.inject.Key;
 import com.google.inject.MembersInjector;
 import com.google.inject.TypeLiteral;
 import com.google.inject.internal.ProvisionListenerStackCallback.ProvisionCallback;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.InjectionPoint;
+import com.google.inject.weaver.WeavedInjector;
 
 /**
  * Injects members of instances of a given type.
@@ -59,6 +61,7 @@ final class MembersInjectorImpl<T> implements MembersInjector<T> {
   public void injectMembers(T instance) {
     Errors errors = new Errors(typeLiteral);
     try {
+      WeavedInjector weavedInjector = Guice.getAnnotationDatabaseFinder().
       injectAndNotify(instance, errors, null, null, typeLiteral, false);
     } catch (ErrorsException e) {
       errors.merge(e.getErrors());
@@ -72,7 +75,8 @@ final class MembersInjectorImpl<T> implements MembersInjector<T> {
       final Key<T> key, // possibly null!
       final ProvisionListenerStackCallback<T> provisionCallback, // possibly null!
       final Object source,
-      final boolean toolableOnly) throws ErrorsException {
+      final boolean toolableOnly, 
+      final WeavedInjector weavedInjector) throws ErrorsException {
     if (instance == null) {
       return;
     }
@@ -85,12 +89,12 @@ final class MembersInjectorImpl<T> implements MembersInjector<T> {
           if (provisionCallback != null && provisionCallback.hasListeners()) {
             provisionCallback.provision(errors, context, new ProvisionCallback<T>() {
               @Override public T call() {
-                injectMembers(instance, errors, context, toolableOnly);
+                injectMembers(instance, errors, context, toolableOnly, weavedInjector);
                 return instance;
               }
             });
           } else {
-            injectMembers(instance, errors, context, toolableOnly);
+            injectMembers(instance, errors, context, toolableOnly, weavedInjector);
           }
         } finally {
           context.popState();
@@ -124,7 +128,7 @@ final class MembersInjectorImpl<T> implements MembersInjector<T> {
     errors.throwIfNewErrors(numErrorsBefore);
   }
 
-  void injectMembers(T t, Errors errors, InternalContext context, boolean toolableOnly) {
+  void injectMembers(T t, Errors errors, InternalContext context, boolean toolableOnly, WeavedInjector weavedInjector) {
     // optimization: use manual for/each to save allocating an iterator here
 	Object[] params = new Object[memberInjectors.size()];
     for (int i = 0, size = memberInjectors.size(); i < size; i++) {
@@ -132,9 +136,11 @@ final class MembersInjectorImpl<T> implements MembersInjector<T> {
       if(!toolableOnly || injector.getInjectionPoint().isToolable()) {
     	  //TODO XXX This is where we add the weaver ( and before to avoid building injection points with fields)
         //injector.inject(errors, context, t);
-    	  params[i] = injector.getValueToInject(errors, context, t);
+    	params[i] = injector.getValueToInject(errors, context, t);
       }
     }
+    weavedInjector.injectFields(t, params);
+    
 
     // TODO: There's no way to know if a user's MembersInjector wants toolable injections.
     if(!toolableOnly) {

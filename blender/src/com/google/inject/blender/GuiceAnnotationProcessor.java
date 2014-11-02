@@ -58,6 +58,10 @@ public class GuiceAnnotationProcessor extends AbstractProcessor {
 
     /** Contains all classes that can be injected into a class with injection points.*/
     private HashSet<String> bindableClasses;
+    
+    /** Maps each class with injection points to a WeavedInjector. Declared as objects to avoid dependencies on Guice core ?*/
+    private HashMap<Class, Object> mapClassToWeavedInjector;
+    
     /** Name of the package to generate the annotation database into.*/
     private String annotationDatabasePackageName;
 
@@ -69,6 +73,7 @@ public class GuiceAnnotationProcessor extends AbstractProcessor {
         mapAnnotationToMapClassContainingInjectionToInjectedMethodSet = new HashMap<String, Map<String,Set<String>> >();
         mapAnnotationToMapClassContainingInjectionToInjectedConstructorsSet = new HashMap<String, Map<String,Set<String>> >();
         bindableClasses = new HashSet<String>();
+        mapClassToWeavedInjector = new HashMap<Class, Object>();
     }
 
     @Override
@@ -117,7 +122,14 @@ public class GuiceAnnotationProcessor extends AbstractProcessor {
                 className = annotationDatabasePackageName+'.'+className;
             }
             jfo = processingEnv.getFiler().createSourceFile( className );
-            annotationDatabaseGenerator.generateAnnotationDatabase(jfo, annotationDatabasePackageName, mapAnnotationToMapClassContainingInjectionToInjectedFieldSet, mapAnnotationToMapClassContainingInjectionToInjectedMethodSet, mapAnnotationToMapClassContainingInjectionToInjectedConstructorsSet, classesContainingInjectionPointsSet, bindableClasses);
+            annotationDatabaseGenerator.generateAnnotationDatabase(jfo, 
+            		annotationDatabasePackageName, 
+            		mapAnnotationToMapClassContainingInjectionToInjectedFieldSet, 
+            		mapAnnotationToMapClassContainingInjectionToInjectedMethodSet, 
+            		mapAnnotationToMapClassContainingInjectionToInjectedConstructorsSet, 
+            		classesContainingInjectionPointsSet, 
+            		bindableClasses,
+            		mapClassToWeavedInjector);
         } catch (IOException e) {
             e.printStackTrace();
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage());

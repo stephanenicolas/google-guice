@@ -1,0 +1,11 @@
+#if( $packageName ) 
+package $packageName;
+#end
+
+import com.google.inject.weaver.WeavedInjector;
+
+public class WeavedInjectorImpl implements WeavedInjector {
+
+    public void inject(Object target, Object[] params) {
+    }
+}
